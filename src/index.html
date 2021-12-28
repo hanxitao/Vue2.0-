@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app" style="font-size: 50px;">
+        app【{{a}}】xxxxxxx
+        <div class="wrap">
+            b：【{{b}}】
+            <div class="box"></div>
+            <div class="box"></div>
+            <div class="box"></div>
+        </div>
+        <div class="wrap1">
+            <div class="box">
+                arr：{{arr}}
+            </div>
+            <div class="box">
+                obj：{{obj}}
+            </div>
+            <div class="box"></div>
+            <div class="box"></div>
+        </div>
+    </div>
+
+    <script>
+        const options = {
+            data() {
+                return {
+                    a: 1,
+                    b: 2,
+                    arr: ['a', 'b', 'c', [1,2,3]],
+                    obj: {
+                        name: 'hhh',
+                        age: 23,
+                        hobby: ['sleep']
+                    }
+                }
+            },
+            el: '#app'
+        }
+        const vm = new Vue(options);
+
+        setTimeout(() => {
+            vm.a = 'a1';
+            vm.a = 'a2';
+            vm.a = 'a3';
+            vm.b = 'b2';
+        }, 3000);
+    </script>
+</body>
+</html>
