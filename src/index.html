@@ -41,7 +41,14 @@
                     }
                 }
             },
-            el: '#app'
+            el: '#app',
+            watch: {
+                a: {
+                    handler(newVal, oldVal) {
+                        console.log('user watcher：a', 'newVal：', newVal, 'oldVal：', oldVal);
+                    }
+                }
+            }
         }
         const vm = new Vue(options);
 

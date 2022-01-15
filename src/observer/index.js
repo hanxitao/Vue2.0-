@@ -55,7 +55,6 @@ function defineReactive(data, key, value) {
             return value;
         },
         set(newValue) {
-            console.log('数组重新赋值～～～');
             if (newValue === value) return;
             // 如果赋值的新值也是一个对象，需要观测
             observe(newValue);

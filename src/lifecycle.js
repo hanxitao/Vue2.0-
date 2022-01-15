@@ -20,7 +20,6 @@ export function mountComponent(vm, el) {
 
     // 引入watcher的概念，这里注册一个watcher，执行vm._update(vm._render())方法渲染视图
     let updateComponent = () => {
-        console.log('刷新了')
         vm._update(vm._render());
     };
     new Watcher(vm, updateComponent, null, true);

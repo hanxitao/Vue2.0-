@@ -1,6 +1,7 @@
 import { initState } from './state';
 import { compileToFunctions } from './compiler/index';
 import { mountComponent } from './lifecycle';
+import Watcher from './observer/watcher';
 
 export function initMixin(Vue) {
     Vue.prototype._init = function (options) {
@@ -37,5 +38,16 @@ export function initMixin(Vue) {
         }
 
         return mountComponent(vm, el);
+    }
+
+    Vue.prototype.$watch = function (exprOrFn, cb, options) {
+        const vm = this;
+
+        // user: true这里表示是一个用户watcher
+        new Watcher(vm, exprOrFn, cb, { ...options, user: true });
+        // 如果有immediate属性，表示需要立即执行回调
+        if (options.immediate) {
+            cb();
+        }
     }
 }

@@ -13,19 +13,33 @@ export default class Watcher {
         this.deps = []; // 存放dep的容器
         this.depsId = new Set(); // 用来去重dep
 
+        this.user = options.user; // 标识用户watcher
+
         // 如果表达式是一个函数
         if (typeof exprOrFn === 'function') {
             this.getter = exprOrFn;
+        } else {
+            this.getter = function () {
+                // 用户watcher传过来的可能是一个字符串，类似：a.a.b
+                let path = exprOrFn.split('.');
+                let obj = vm;
+                for (let i = 0; i < path.length; i ++) {
+                    obj = obj[path[i]]; // vm.a.a.b
+                }
+                return obj;
+            }
         }
 
-        // 实例化就会默认调用get方法
-        this.get();
+        // 实例化就进行一次取值操作，进行依赖收集过程
+        this.value = this.get();
     }
 
     get() {
         pushTarget(this);
-        this.getter();
+        const res = this.getter.call(this.vm);
         popTarget();
+
+        return res;
     }
 
     addDep(dep) {
@@ -44,7 +58,18 @@ export default class Watcher {
     }
 
     run() {
-        // 真正的触发更新
-        this.get();
+        const newVal = this.get(); // 新值
+        const oldVal = this.value; // 旧值
+        this.value = newVal; // 现在的新值将成为下一次的老值
+        if (this.user) {
+            const objToStr = Object.prototype.toString;
+            // 如果两次的值不相同，或者是引用类型，因为引用类型新旧值是相等的
+            if (newVal !== oldVal || objToStr.call(newVal) === '[object Object]') {
+                this.cb.call(this.vm, newVal, oldVal);
+            }
+        } else {
+            // 渲染watcher
+            this.exprOrFn();
+        }
     }
 }
