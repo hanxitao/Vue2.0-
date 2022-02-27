@@ -47,7 +47,12 @@ export function initMixin(Vue) {
         new Watcher(vm, exprOrFn, cb, { ...options, user: true });
         // 如果有immediate属性，表示需要立即执行回调
         if (options.immediate) {
-            cb();
+            let path = exprOrFn.split('.');
+            let obj = vm;
+            for (let i = 0; i < path.length; i ++) {
+                obj = obj[path[i]];
+            }
+            cb.call(vm, obj, undefined);
         }
     }
 }

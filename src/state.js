@@ -1,4 +1,6 @@
+import Dep from './observer/dep';
 import { observe } from './observer/index';
+import Watcher from './observer/watcher';
 
 export function initState(vm) {
     const opts = vm.$options;
@@ -16,7 +18,7 @@ export function initState(vm) {
     }
 
     if (opts.computed) {
-        // initComputed(vm);
+        initComputed(vm);
     }
 
     if (opts.watch) {
@@ -76,4 +78,58 @@ function createWatcher(vm, exprOrFn, handler, options = {}) {
 
     // 调用vm.$watch创建用户watcher
     return vm.$watch(exprOrFn, handler, options);
+}
+
+function initComputed(vm) {
+    const computed = vm.$options.computed;
+    const watchers = vm._computedWatchers = {};
+
+    for (let k in computed) {
+        const userDef = computed[k]; // 获取用户定义的计算属性
+        const getter = typeof userDef === 'function' ? userDef : userDef.get;
+        watchers[k] = new Watcher(vm, getter, () => {}, { lazy: true }); // 创建计算watcher，lazy设置为true
+        defineComputed(vm, k, userDef);
+    }
+}
+
+// 定义普通对象用来劫持计算属性
+const sharedPropertyDefinition = {
+    enumerable: true,
+    configurable: true,
+    get: () => {},
+    set: () => {}
+}
+
+// 重新定义计算属性，使用get和set进行劫持
+function defineComputed(target, key, userDef) {
+    if (typeof userDef === 'function') {
+        sharedPropertyDefinition.get = createComputedGetter(key);
+    } else {
+        sharedPropertyDefinition.get = createComputedGetter(key);
+        sharedPropertyDefinition.set = userDef.set;
+    }
+
+    // 利用Object.defineProperty来对计算属性的get和set进行劫持
+    Object.defineProperty(target, key, sharedPropertyDefinition);
+}
+
+// 重写计算属性的get方法来判断是否需要进行重新计算
+function createComputedGetter(key) {
+    return function () {
+        const watcher = this._computedWatchers[key]; // 获取对应的计算属性watcher
+        
+        if (watcher) {
+            if (watcher.dirty) {
+                console.log('computed is dirty')
+                watcher.evaluate(); // 计算属性取值的时候，如果是脏的，则需要重新计算
+
+                if (Dep.target) {
+                    // 如果Dep还存在target，这个时候一般为渲染watcher，计算属性依赖的数据也需要收集
+                    watcher.depend();
+                }
+            }
+
+            return watcher.value;
+        }
+    }
 }
