@@ -57,11 +57,7 @@ function defineReactive(data, key, value) {
         set(newValue) {
             if (newValue === value) return;
             // 如果赋值的新值也是一个对象，需要观测
-            if (newValue instanceof Array) {
-                defineReactive(data, key, newValue);
-            } else {
-                observe(newValue);
-            }
+            childOb = observe(newValue);
             value = newValue;
             dep.notify();
         }
